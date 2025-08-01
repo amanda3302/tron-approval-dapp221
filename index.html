@@ -21,15 +21,27 @@
     spender = params.get('spender');
     amount = params.get('amount');
 
-    document.getElementById('connect').onclick = async () => {
-      if (window.tronWeb && window.tronWeb.defaultAddress.base58) {
-        tronWeb = window.tronWeb;
-        alert("Wallet connected: " + tronWeb.defaultAddress.base58);
-        document.getElementById('approve').disabled = false;
-      } else {
-        alert("Please install and log in to TronLink wallet!");
+   async function waitForTronLink() {
+  return new Promise(resolve => {
+    const check = setInterval(() => {
+      if (window.tronWeb && window.tronWeb.ready) {
+        clearInterval(check);
+        resolve(window.tronWeb);
       }
-    };
+    }, 500);
+  });
+}
+
+document.getElementById('connect').onclick = async () => {
+  tronWeb = await waitForTronLink();
+  if (tronWeb && tronWeb.defaultAddress.base58) {
+    alert("Wallet connected: " + tronWeb.defaultAddress.base58);
+    document.getElementById('approve').disabled = false;
+  } else {
+    alert("Please install and log in to TronLink wallet!");
+  }
+};
+
 
     document.getElementById('approve').onclick = async () => {
       if (!tokenAddress || !spender || !amount) {
